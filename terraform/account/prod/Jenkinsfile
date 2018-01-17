@@ -1,0 +1,133 @@
+properties([
+  parameters([
+    booleanParam(name: 'destroy', description: 'Destroy existing infrastructure', defaultValue: false),
+  ]),
+  buildDiscarder(
+    logRotator(numToKeepStr: '25')
+  ),
+])
+
+// to install a version of terraform that is not available on the jenkins agent, 
+// run https://jenkins-webinf.baat.nikecloud.com/job/ELC/job/terraform-install/
+// with the desired version.
+TERRAFORM_VERSION="0.9.8"
+TERRAFORM_BINARY="/opt/terraform/$TERRAFORM_VERSION/terraform"
+
+DIR="account"
+
+AWS_ACCOUNT_NUMBER="890831765352"
+AWS_REGION="eu-west-1"
+AWS_REGION_DR="eu-central-1"
+AWS_ROLE="carrierintBuildAgentRole"
+
+node('carrierint-lab-eu-west-1') {
+
+  checkout scm
+
+  try {
+    stage('Terraform Init') {
+      dir("$DIR"){
+        sh """        
+		mkdir -p selectedaccount
+		cp -r prod/* selectedaccount/
+		cp config/config_prod.tf config.tf
+		
+		$TERRAFORM_BINARY init -no-color
+		"""
+      }
+    }
+    stage('Terraform plan') {
+      dir("$DIR"){
+		    
+    		if ( params.destroy ) {
+    		  sh """
+    		  source /usr/local/bin/temp_creds.sh $AWS_ACCOUNT_NUMBER $AWS_REGION $AWS_ROLE
+			  export TF_VAR_account=prod
+   			  $TERRAFORM_BINARY plan -destroy -no-color -out terraform.plan
+   			  """
+    		} else if ( !params.destroy ){
+    		  sh """
+    		  source /usr/local/bin/temp_creds.sh $AWS_ACCOUNT_NUMBER $AWS_REGION $AWS_ROLE
+			  export TF_VAR_account=prod
+   			  $TERRAFORM_BINARY plan -no-color -out terraform.plan
+   			  """
+    		}
+      }
+	}
+    stage("Validate before Apply") {
+      timeout(time:30, unit:'MINUTES') {
+        input 'Are you sure? Review the plan before proceeding!'
+      }
+    }
+    stage('Terraform apply') {
+      dir("$DIR"){
+    		sh """
+    		source /usr/local/bin/temp_creds.sh $AWS_ACCOUNT_NUMBER $AWS_REGION $AWS_ROLE
+			export TF_VAR_account=prod
+    		$TERRAFORM_BINARY apply -no-color terraform.plan
+    		"""
+      }
+    }
+	
+	
+	
+	stage('Terraform Init DR') {
+      dir("$DIR"){
+        sh """   
+		rm deploy_account.tf
+		ls -lah
+		rm -rf .terraform terraform.plan terraform.tfstate.backup
+		source /usr/local/bin/temp_creds.sh $AWS_ACCOUNT_NUMBER $AWS_REGION_DR $AWS_ROLE		
+		rm -rf selectedaccount
+		mkdir -p selectedaccount
+		cp -r prod/* selectedaccount/
+		cp config/config_prod_dr.tf config.tf
+		export TF_VAR_dr=1
+		$TERRAFORM_BINARY init -no-color
+		"""
+      }
+    }
+    stage('Terraform plan DR') {
+      dir("$DIR"){
+		    
+    		if ( params.destroy ) {
+    		  sh """			  
+    		  source /usr/local/bin/temp_creds.sh $AWS_ACCOUNT_NUMBER $AWS_REGION_DR $AWS_ROLE
+			  export TF_VAR_account=prod_dr
+   			  $TERRAFORM_BINARY plan -destroy -no-color -out terraform.plan
+   			  """
+    		} else if ( !params.destroy ){
+    		  sh """
+    		  source /usr/local/bin/temp_creds.sh $AWS_ACCOUNT_NUMBER $AWS_REGION_DR $AWS_ROLE
+			  export TF_VAR_account=prod_dr
+			  export TF_VAR_dr=1
+   			  $TERRAFORM_BINARY plan -no-color -out terraform.plan
+   			  """
+    		}
+      }
+	}
+    stage("Validate before Apply DR") {
+      timeout(time:30, unit:'MINUTES') {
+        input 'Are you sure? Review the plan before proceeding!'
+      }
+    }
+    stage('Terraform apply DR') {
+      dir("$DIR"){
+    		sh """
+    		source /usr/local/bin/temp_creds.sh $AWS_ACCOUNT_NUMBER $AWS_REGION_DR $AWS_ROLE
+			export TF_VAR_account=prod_dr
+			export TF_VAR_dr=1
+    		$TERRAFORM_BINARY apply -no-color terraform.plan
+    		"""
+      }
+    }
+	
+  } catch (e) { 
+    currentBuild.result = "FAILED"
+    throw e
+  } finally {
+    stage('cleanup'){
+      deleteDir()
+    }
+  }
+}

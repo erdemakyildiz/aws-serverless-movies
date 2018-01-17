@@ -1,0 +1,230 @@
+---
+swagger: '2.0'
+info:
+  version: '0.1'
+  title: RebookingService
+basePath: "/rebooking/v1"
+schemes:
+- https
+paths:
+  "/{shipmentreference}":
+    get:
+      produces:
+      - application/json
+      parameters:
+      - name: shipmentreference
+        in: path
+        required: true
+        type: string
+      responses:
+        '200':
+          description: 200 response
+          schema:
+            type: array
+            items:
+              "$ref": "#/definitions/Character"
+  "/{shipmentreference}/creationdate/{creationdate}":
+    post:
+      consumes:
+      - application/json
+      produces:
+      - application/json
+      parameters:
+      - name: shipmentreference
+        in: path
+        required: true
+        type: string
+      - name: creationdate
+        in: path
+        required: true
+        type: long
+      - in: body
+        name: RebookingSummary
+        required: true
+        schema:
+          "$ref": "#/definitions/RebookingSummary"
+      responses:
+        '200':
+          description: 200 OK
+          schema:
+            "$ref": "#/definitions/Character"
+    get:
+      produces:
+      - application/json
+      parameters:
+      - name: shipmentreference
+        in: path
+        required: true
+        type: string
+      - name: creationdate
+        in: path
+        required: true
+        type: long
+      responses:
+        '200':
+          description: 200 response
+          schema:
+            "$ref": "#/definitions/Character"
+    delete:
+      parameters:
+      - name: shipmentreference
+        in: path
+        required: true
+        type: string
+      - name: creationdate
+        in: path
+        required: true
+        type: long
+      responses:
+        '204':
+          description: The rebooking was successfully deleted
+definitions:
+  RebookingSummary:
+    type: object
+    required:
+    - type
+    - shipmentIdentifier
+    - shipToCustomerNumber
+    - shippingPoint
+    properties:
+      type:
+        type: string
+        enum: [ "REBOOKING", "HOLD" ]
+      shipmentIdentifier:
+        type: string
+        description: The shipment identifier AKA packlist number
+        example: 71537655
+      creationDateTime:
+        type: long
+        format: date-time
+        description: The date and time when the rebooking was requested
+      deliveryDate:
+        type: long
+        format: date
+        description: >
+          The requested delivery date (without time indication).
+          Not applicable when type=HOLD.
+        example: '1515153825819'
+      deliveryFromDatetime:
+        type: long
+        format: date-time
+        description: >
+          The start of the requested delivery time window (including time indication).
+          Is required when deliveryToDatetime is not null.
+          Not applicable when type=HOLD.
+      deliveryToDatetime:
+        type: long
+        format: date-time
+        description: >
+          The end of the requested delivery time window (including time indication)
+          Is required when deliveryFromDatetime is not null.
+          Not applicable when type=HOLD.
+      deliveryInstructions:
+        type: string
+        description: >
+          General delivery instructions
+          Not applicable when type=HOLD.
+        example: '09:00@ref lottie'
+      requestReason:
+        type: string
+        description: The reason why the shipment is rebooked
+        example: Capacity issues on customer side
+      shipToCustomerNumber:
+        type: number
+        description: The shipment's customer number
+        example: 155070
+      shippingPoint:
+        type: string
+        description: The shiping point
+        example: 1060
+      status:
+        type: string
+        enum: ["APPRV", "DECL", "OPEN"]
+  Rebooking:
+    allOf:
+      - $ref: '#/definitions/RebookingSummary'
+      - type: object
+        required:
+        - type
+        - shipmentIdentifier
+        properties:
+          creationDateTime:
+            type: string
+            format: date-time
+            description: The date and time when the rebooking was requested
+          deliveryDate:
+            type: string
+            format: date
+            description: >
+              The requested delivery date (without time indication).
+              Not applicable when type=HOLD.
+            example: 'Jan 1, 1970 12:00:00 AM'
+          deliveryFromDatetime:
+            type: string
+            format: date-time
+            description: >
+              The start of the requested delivery time window (including time indication).
+              Is required when deliveryToDatetime is not null.
+              Not applicable when type=HOLD.
+          deliveryToDatetime:
+            type: string
+            format: date-time
+            description: >
+              The end of the requested delivery time window (including time indication)
+              Is required when deliveryFromDatetime is not null.
+              Not applicable when type=HOLD.
+          changeDateTime:
+            type: string
+            format: date-time
+            description: The date and time of the latest change
+          alignedWithCarrier:
+            type: boolean
+            description: True if the carrier has already been informed about this rebooking
+          releaseMonth:
+            type: string
+            description: The month when the shipment is expected to be released
+            example: '2017-09'
+          requester:
+            type: string
+            description: The user that requested the rebooking
+          assignedTo:
+            type: string
+            description: The user that is assigned to process this rebooking
+          validator:
+            type: string
+            description: The user that validated this rebooking
+          validatedDateTime:
+            type: string
+            format: date-time
+            description: The date and time when this rebooking was validated
+          shipToAddress:
+            type: string
+            description: The requested street address to ship to
+            example: 'V.M. Logistica Via Campiglione 20'
+          shipToCity:
+            type: string
+            description: The requested city to ship to
+            example: Fermo
+          shipToZipCode:
+            type: string
+            description: The requested zip code to ship to
+            example: 63023
+          declinedReason:
+            type: string
+            description: The reason for declining this rebooking request
+            example: 'Too late: Already left delivery hub'
+          comment:
+            type: string
+            description: Additialal comments about this rebooking
+  RebookingEvent:
+    type: object
+    required:
+    - eventType
+    - event
+    properties:
+      eventType:
+        type: string
+        readOnly: true
+        enum: [ "REBOOKING_EVENT" ]
+      event:
+        $ref: "#/definitions/Character"
