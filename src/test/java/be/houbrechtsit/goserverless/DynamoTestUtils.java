@@ -32,12 +32,11 @@ public class DynamoTestUtils {
             e.printStackTrace();
         }
 
-        System.setProperty(LambdaEnvironment.TABLE_REGION_PROPERTY, "eu-west-1");
         System.setProperty(LambdaEnvironment.TABLE_NAME_PREFIX_PROPERTY, "test_");
         System.setProperty(LambdaEnvironment.DYNAMO_ENDPOINT_URL_PROPERTY, "http://localhost:" + port);
 
-        CharacterRepository characterRepository = CharacterRepository.geInstance();
-        return new DynamoTestUtils(characterRepository.getAmazonDynamoDB(), characterRepository.getDynamoDBMapper());
+        MovieRepository movieRepository = MovieRepository.geInstance();
+        return new DynamoTestUtils(movieRepository.getAmazonDynamoDB(), movieRepository.getDynamoDBMapper());
     }
 
     public void startDynamo() {

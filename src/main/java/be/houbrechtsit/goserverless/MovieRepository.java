@@ -11,24 +11,24 @@ import java.util.List;
 /**
  * @author IHoubr
  */
-public class CharacterRepository {
-    private static CharacterRepository instance;
+public class MovieRepository {
+    private static MovieRepository instance;
 
     @Getter
     private AmazonDynamoDB amazonDynamoDB;
     @Getter
     private DynamoDBMapper dynamoDBMapper;
 
-    public static CharacterRepository geInstance() {
+    public static MovieRepository geInstance() {
         if (instance != null) {
             return instance;
         }
 
-        instance = new CharacterRepository();
+        instance = new MovieRepository();
         return instance;
     }
 
-    private CharacterRepository() {
+    private MovieRepository() {
         DynamoDBMapperConfig.TableNameOverride tableNameOverride =
                 DynamoDBMapperConfig.TableNameOverride.withTableNamePrefix(LambdaEnvironment.getTableNamePrefix());
         DynamoDBMapperConfig dbMapperConfig =
@@ -47,23 +47,22 @@ public class CharacterRepository {
         dynamoDBMapper = new DynamoDBMapper(amazonDynamoDB, dbMapperConfig);
     }
 
-    public Character load(String name) {
-        DynamoDBQueryExpression<Character> query = new DynamoDBQueryExpression<Character>();
-        query.setHashKeyValues(new Character(name, null));
-        PaginatedQueryList<Character> characters = dynamoDBMapper.query(Character.class, query);
-        return characters.isEmpty() ? null : characters.get(0);
+    public Movie load(String title) {
+        DynamoDBQueryExpression<Movie> query = new DynamoDBQueryExpression<Movie>();
+        query.setHashKeyValues(new Movie(title, null, 0));
+        PaginatedQueryList<Movie> movies = dynamoDBMapper.query(Movie.class, query);
+        return movies.isEmpty() ? null : movies.get(0);
     }
 
-    public void saveOrUpdate(Character character) {
-        dynamoDBMapper.save(character);
+    public void saveOrUpdate(Movie movie) {
+        dynamoDBMapper.save(movie);
     }
 
-    public void delete(Character character) {
-        dynamoDBMapper.delete(character);
+    public void delete(Movie movie) {
+        dynamoDBMapper.delete(movie);
     }
 
-    public List<Character> list() {
-        DynamoDBQueryExpression<Character> query = new DynamoDBQueryExpression<Character>();
-        return dynamoDBMapper.scan(Character.class, new DynamoDBScanExpression());
+    public List<Movie> list() {
+        return dynamoDBMapper.scan(Movie.class, new DynamoDBScanExpression());
     }
 }

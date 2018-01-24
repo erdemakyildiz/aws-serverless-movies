@@ -1,1 +1,0 @@
-This folder contains global vars that are the same for all environments - but needs to be defined somewhere central

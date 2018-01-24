@@ -1,1 +1,0 @@
-This folder contains vars specific and general to PROD

@@ -11,12 +11,12 @@ import lombok.*;
 @Setter
 @NoArgsConstructor
 @AllArgsConstructor
-@DynamoDBTable(tableName = "persons")
+@DynamoDBTable(tableName = "movies")
 @ToString()
-public class Character {
+public class Movie {
 
     @DynamoDBHashKey
-    private String name;
-
-    private String series;
+    private String title;
+    private String director;
+    private int year;
 }
