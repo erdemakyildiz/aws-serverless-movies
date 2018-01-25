@@ -20,10 +20,15 @@ public class DynamoTestUtils {
     private final DynamoDBMapper dynamoDBMapper;
     private final AmazonDynamoDB amazonDynamoDB;
 
+    private static DynamoTestUtils instance;
     private static int port;
     private static boolean started = false;
 
     public static DynamoTestUtils getInstance() {
+        if (instance != null) {
+            return instance;
+        }
+
         try {
             ServerSocket socket = new ServerSocket(0);
             port = socket.getLocalPort();
@@ -36,7 +41,8 @@ public class DynamoTestUtils {
         System.setProperty(LambdaEnvironment.DYNAMO_ENDPOINT_URL_PROPERTY, "http://localhost:" + port);
 
         MovieRepository movieRepository = MovieRepository.geInstance();
-        return new DynamoTestUtils(movieRepository.getAmazonDynamoDB(), movieRepository.getDynamoDBMapper());
+        instance = new DynamoTestUtils(movieRepository.getAmazonDynamoDB(), movieRepository.getDynamoDBMapper());
+        return instance;
     }
 
     public void startDynamo() {
@@ -58,7 +64,7 @@ public class DynamoTestUtils {
 
     public void createTable(Class persistentClass) {
         TableUtils.createTableIfNotExists(amazonDynamoDB, createTableRequest(persistentClass));
-        //dynamoDB.createTable(createTableRequest(persistentClass));
+        dynamoDB.createTable(createTableRequest(persistentClass));
     }
 
     private CreateTableRequest createTableRequest(Class persistentClass) {

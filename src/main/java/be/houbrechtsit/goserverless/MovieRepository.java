@@ -1,12 +1,15 @@
 package be.houbrechtsit.goserverless;
 
 import com.amazonaws.client.builder.AwsClientBuilder;
+import com.amazonaws.regions.Regions;
 import com.amazonaws.services.dynamodbv2.AmazonDynamoDB;
 import com.amazonaws.services.dynamodbv2.AmazonDynamoDBClientBuilder;
 import com.amazonaws.services.dynamodbv2.datamodeling.*;
 import lombok.Getter;
 
 import java.util.List;
+
+import static com.amazonaws.regions.Regions.US_EAST_1;
 
 /**
  * @author IHoubr
@@ -29,19 +32,15 @@ public class MovieRepository {
     }
 
     private MovieRepository() {
-        DynamoDBMapperConfig.TableNameOverride tableNameOverride =
-                DynamoDBMapperConfig.TableNameOverride.withTableNamePrefix(LambdaEnvironment.getTableNamePrefix());
         DynamoDBMapperConfig dbMapperConfig =
-                new DynamoDBMapperConfig.Builder().withTableNameOverride(tableNameOverride).build();
-
-
+                new DynamoDBMapperConfig.Builder().build();
         AmazonDynamoDBClientBuilder clientBuilder = AmazonDynamoDBClientBuilder.standard();
         String dynamoEndpointUrl = LambdaEnvironment.getDynamoEndpointUrl();
         if (dynamoEndpointUrl != null) {
             clientBuilder = clientBuilder.withEndpointConfiguration(
                     new AwsClientBuilder.EndpointConfiguration(dynamoEndpointUrl, LambdaEnvironment.getAwsRegionName()));
         } else {
-            clientBuilder = clientBuilder.withRegion(LambdaEnvironment.getAwsRegion());
+            clientBuilder = clientBuilder.withRegion(US_EAST_1.getName());
         }
         amazonDynamoDB = clientBuilder.build();
         dynamoDBMapper = new DynamoDBMapper(amazonDynamoDB, dbMapperConfig);

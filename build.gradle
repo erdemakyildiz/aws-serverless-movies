@@ -8,7 +8,7 @@ buildscript {
 }
 
 plugins {
-    id 'java'
+    id 'groovy'
     id 'com.github.ben-manes.versions' version '0.17.0'
 }
 
@@ -33,12 +33,17 @@ dependencies {
 
     compile('com.amazonaws:aws-lambda-java-core:1.2.0')
     compile('com.amazonaws:aws-lambda-java-events:1.2.0')
-    compile('com.amazonaws:aws-java-sdk-lambda:1.11.259')
-    compile('com.amazonaws:aws-java-sdk-dynamodb:1.11.259')
-    compile('com.google.code.gson:gson:2.3.1')
+    compile('com.amazonaws:aws-java-sdk-lambda:1.11.269')
+    compile('com.amazonaws:aws-java-sdk-dynamodb:1.11.269')
+    compile('com.google.code.gson:gson:2.8.2')
+    compile('com.amazonaws:aws-lambda-java-log4j2:1.0.0')
+    compile('org.apache.logging.log4j:log4j-core:2.10.0')
+    compile('org.apache.logging.log4j:log4j-api:2.10.0')
 
     testCompile('com.amazonaws:DynamoDBLocal:1.11.86')
     testCompile('junit:junit:4.12')
+    testCompile('org.codehaus.groovy:groovy-all:2.4.13')
+    testCompile('org.spockframework:spock-core:1.1-groovy-2.4')
 }
 
 task buildZip(type: Zip) {
