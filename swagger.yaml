@@ -1,0 +1,86 @@
+swagger: "2.0"
+info:
+  version: 1.0.0
+  title: Movies
+host: moviestore.swagger.io
+basePath: /test
+schemes:
+  - https
+consumes:
+  - application/json
+produces:
+  - application/json
+paths:
+  /v1/movies:
+    get:
+      summary: List all movies
+      operationId: listMovies
+      tags:
+        - movies
+      parameters:
+        - name: limit
+          in: query
+          description: How many items to return at one time (max 100)
+          required: false
+          type: integer
+          format: int32
+      responses:
+        "200":
+          description: A paged array of movies
+          schema:
+            $ref: '#/definitions/Movies'
+      x-amazon-apigateway-integration:
+        uri: "${invocation_uri}"
+        passthroughBehavior: when_no_match
+        httpMethod: POST
+        type: aws_proxy
+    post:
+      summary: Create a movie
+      operationId: createMovies
+      tags:
+        - movies
+      responses:
+        "201":
+          description: Null response
+      x-amazon-apigateway-integration:
+        uri: "${invocation_uri}"
+        passthroughBehavior: when_no_match
+        httpMethod: POST
+        type: aws_proxy
+  /v1/movies/{movieId}:
+    get:
+      summary: Info for a specific movie
+      operationId: showMovieById
+      tags:
+        - movies
+      parameters:
+        - name: movieId
+          in: path
+          required: true
+          description: The id of the movie to retrieve
+          type: string
+      responses:
+        "200":
+          description: Expected response to a valid request
+          schema:
+            $ref: '#/definitions/Movies'
+      x-amazon-apigateway-integration:
+        uri: "${invocation_uri}"
+        passthroughBehavior: when_no_match
+        httpMethod: POST
+        type: aws_proxy
+definitions:
+  Movie:
+    required:
+      - title
+    properties:
+      title:
+        type: string
+      director:
+        type: string
+      year:
+        type: integer
+  Movies:
+    type: array
+    items:
+      $ref: '#/definitions/Movie'
