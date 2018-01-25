@@ -7,3 +7,6 @@ gradle-app.setting
 /out
 *.iml
 .idea
+
+.terraform
+terraform.*
