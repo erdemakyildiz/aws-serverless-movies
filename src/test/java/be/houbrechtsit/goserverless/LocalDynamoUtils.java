@@ -12,19 +12,21 @@ import com.amazonaws.services.dynamodbv2.util.TableUtils;
 import java.io.IOException;
 import java.net.ServerSocket;
 
+import static be.houbrechtsit.goserverless.MovieRepository.DYNAMO_ENDPOINT_URL_ENV_VARIABLE;
+
 /**
  * @author IHoubr
  */
-public class DynamoTestUtils {
+public class LocalDynamoUtils {
     private final DynamoDB dynamoDB;
     private final DynamoDBMapper dynamoDBMapper;
     private final AmazonDynamoDB amazonDynamoDB;
 
-    private static DynamoTestUtils instance;
+    private static LocalDynamoUtils instance;
     private static int port;
     private static boolean started = false;
 
-    public static DynamoTestUtils getInstance() {
+    public static LocalDynamoUtils getInstance() {
         if (instance != null) {
             return instance;
         }
@@ -37,11 +39,10 @@ public class DynamoTestUtils {
             e.printStackTrace();
         }
 
-        System.setProperty(LambdaEnvironment.TABLE_NAME_PREFIX_PROPERTY, "test_");
-        System.setProperty(LambdaEnvironment.DYNAMO_ENDPOINT_URL_PROPERTY, "http://localhost:" + port);
+        System.setProperty(DYNAMO_ENDPOINT_URL_ENV_VARIABLE, "http://localhost:" + port);
 
         MovieRepository movieRepository = MovieRepository.geInstance();
-        instance = new DynamoTestUtils(movieRepository.getAmazonDynamoDB(), movieRepository.getDynamoDBMapper());
+        instance = new LocalDynamoUtils(movieRepository.getAmazonDynamoDB(), movieRepository.getDynamoDBMapper());
         return instance;
     }
 
@@ -56,7 +57,7 @@ public class DynamoTestUtils {
         }
     }
 
-    private DynamoTestUtils(AmazonDynamoDB amazonDynamoDB, DynamoDBMapper dynamoDBMapper) {
+    private LocalDynamoUtils(AmazonDynamoDB amazonDynamoDB, DynamoDBMapper dynamoDBMapper) {
         this.dynamoDB = new DynamoDB(amazonDynamoDB);
         this.dynamoDBMapper = dynamoDBMapper;
         this.amazonDynamoDB = amazonDynamoDB;

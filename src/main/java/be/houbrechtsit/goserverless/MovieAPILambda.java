@@ -45,8 +45,8 @@ public class MovieAPILambda {
             } else if (DELETE.equals(httpMethod)) {
                 return deleteMovie(resourceId);
             }
+            return methodNotAllowed();
         }
-        return new ProxyResponse()
     }
 
     private ProxyResponse getMovies() {
