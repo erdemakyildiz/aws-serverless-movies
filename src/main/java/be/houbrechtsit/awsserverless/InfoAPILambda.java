@@ -5,9 +5,14 @@ import com.google.gson.Gson;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
+import java.io.IOException;
+import java.net.URL;
+import java.util.Enumeration;
 import java.util.Map;
+import java.util.jar.Attributes;
+import java.util.jar.Manifest;
 
-public class MovieAPILambda {
+public class InfoAPILambda {
     public static final String HTTP_METHOD = "httpMethod";
     public static final String BODY = "body";
     public static final String GET = "GET";
@@ -15,7 +20,7 @@ public class MovieAPILambda {
     public static final String PUT = "PUT";
     public static final String DELETE = "DELETE";
 
-    private static final Logger log = LogManager.getLogger(MovieAPILambda.class);
+    private static final Logger log = LogManager.getLogger(InfoAPILambda.class);
     private static final Gson gson = new Gson();
     public static final String MOVIE_ID_PATH_PARAMETER = "movieId";
     public static final String PATH_PARAMETERS = "pathParameters";
@@ -81,6 +86,25 @@ public class MovieAPILambda {
         Map<String, String> pathParameters = (Map<String, String>) request.get(PATH_PARAMETERS);
         if (pathParameters != null) {
             return pathParameters.get(MOVIE_ID_PATH_PARAMETER);
+        }
+        return null;
+    }
+
+    private Attributes getManifestInformation() {
+        try {
+            Manifest manifest = null;
+            Enumeration<URL> resources = getClass().getClassLoader().getResources("META-INF/MANIFEST.MF");
+            while (resources.hasMoreElements()) {
+                manifest = new Manifest(resources.nextElement().openStream());
+                if (manifest.getMainAttributes().getValue("Implementation-Title") != null && manifest.getMainAttributes().getValue("Implementation-Title").equals("aws-serverless-movies")) {
+                    break;
+                }
+            }
+            if (manifest != null) {
+                return manifest.getMainAttributes();
+            }
+        } catch (IOException e) {
+            log.error("Exception while reading manifest", e);
         }
         return null;
     }
