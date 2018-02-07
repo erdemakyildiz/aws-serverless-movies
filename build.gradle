@@ -24,7 +24,7 @@ repositories {
     }
 }
 
-version = '0.1'
+version = file('version').text.trim()
 group = 'be.houbrechts-it'
 
 
@@ -46,12 +46,24 @@ dependencies {
     testCompile('org.spockframework:spock-core:1.1-groovy-2.4')
 }
 
+task applicationProperties(type: WriteProperties) {
+    outputFile = 'build/application.properties'
+    properties 'Implementation-Title': project.name,
+            'Implementation-Version': project.version,
+            'Built-Date': new Date().format("EEE MMM dd HH:mm:ss zzz yyyy "),
+            'Git-Commit': "git rev-parse HEAD".execute().text.trim(),
+            'Git-Branch': "git rev-parse --abbrev-ref HEAD".execute().text.trim(),
+            'Built-JDK': System.getProperty('java.version'),
+            'Created-By': 'Gradle'
+}
+
 task buildZip(type: Zip) {
     from compileJava
     from processResources
     into('lib') {
         from configurations.runtime
     }
+    from applicationProperties
 }
 
 build.dependsOn buildZip

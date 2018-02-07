@@ -1,15 +1,11 @@
-package be.houbrechtsit.goserverless;
+package be.houbrechtsit.awsserverless;
 
 import com.google.gson.Gson;
-import org.junit.After;
-import org.junit.BeforeClass;
-import org.junit.Test;
 
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 
-import static be.houbrechtsit.goserverless.MovieAPILambda.*;
 import static org.junit.Assert.assertEquals;
 
 /**

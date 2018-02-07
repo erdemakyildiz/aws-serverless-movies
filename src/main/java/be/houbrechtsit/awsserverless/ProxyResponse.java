@@ -1,4 +1,4 @@
-package be.houbrechtsit.goserverless;
+package be.houbrechtsit.awsserverless;
 
 import lombok.AllArgsConstructor;
 import lombok.Data;

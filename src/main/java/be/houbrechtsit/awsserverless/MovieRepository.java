@@ -1,4 +1,4 @@
-package be.houbrechtsit.goserverless;
+package be.houbrechtsit.awsserverless;
 
 import com.amazonaws.client.builder.AwsClientBuilder;
 import com.amazonaws.services.dynamodbv2.AmazonDynamoDB;

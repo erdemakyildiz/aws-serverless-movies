@@ -2,6 +2,10 @@ variable "region" {
   default = "eu-west-1"
 }
 
+locals {
+  application_version = "${trimspace(file("../version"))}"
+}
+
 provider "aws" {
   region = "${var.region}"
 }
@@ -16,7 +20,7 @@ data "template_file" "swagger" {
   template = "${file("../swagger.yaml")}"
 
   vars {
-    invocation_uri = "arn:aws:apigateway:${var.region}:lambda:path/2015-03-31/functions/${aws_lambda_function.movie_api_lambda.arn}/invocations"
+    api_integration = "{ uri: 'arn:aws:apigateway:${var.region}:lambda:path/2015-03-31/functions/${aws_lambda_function.movie_api_lambda.arn}/invocations', passthroughBehavior: when_no_match, httpMethod: POST, type: aws_proxy }"
   }
 }
 
@@ -41,16 +45,16 @@ EOF
 }
 
 resource "aws_lambda_function" "movie_api_lambda" {
-  source_code_hash = "${base64sha256(file("../build/distributions/go-serverless-example-0.1.zip"))}"
-  filename = "../build/distributions/go-serverless-example-0.1.zip"
+  source_code_hash = "${base64sha256(file("../build/distributions/aws-serverless-movies-${local.application_version}.zip"))}"
+  filename = "../build/distributions/aws-serverless-movies-${local.application_version}.zip"
 
   function_name = "movie_api_lambda"
   role = "${aws_iam_role.lambda_exec_role.arn}"
-  handler = "be.houbrechtsit.goserverless.MovieAPILambda::handleRequest"
+  handler = "be.houbrechtsit.awsserverless.MovieAPILambda::handleRequest"
   runtime = "java8"
 }
 
-resource "aws_lambda_permission" "api_lambda_permissions" {
+resource "aws_lambda_permission" "api_movie_lambda_permissions" {
   statement_id = "AllowExecutionFromAPIGateway"
   action = "lambda:InvokeFunction"
   function_name = "${aws_lambda_function.movie_api_lambda.function_name}"
@@ -63,11 +67,6 @@ resource "aws_api_gateway_deployment" "apig_deployment" {
   stage_description = "test"
 }
 
-output "display_invoke_url" {
+output "api_invoke_url" {
   value = "Invoke URL: ${aws_api_gateway_deployment.apig_deployment.invoke_url}"
 }
-
-output "invocation_uri" {
-  value = "arn:aws:apigateway:${var.region}:lambda:path/2015-03-31/functions/${aws_lambda_function.movie_api_lambda.arn}/invocations"
-}
-

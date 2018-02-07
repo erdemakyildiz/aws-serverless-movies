@@ -1,4 +1,4 @@
-package be.houbrechtsit.goserverless;
+package be.houbrechtsit.awsserverless;
 
 import com.amazonaws.services.dynamodbv2.AmazonDynamoDB;
 import com.amazonaws.services.dynamodbv2.datamodeling.DynamoDBMapper;
@@ -12,7 +12,7 @@ import com.amazonaws.services.dynamodbv2.util.TableUtils;
 import java.io.IOException;
 import java.net.ServerSocket;
 
-import static be.houbrechtsit.goserverless.MovieRepository.DYNAMO_ENDPOINT_URL_ENV_VARIABLE;
+import static be.houbrechtsit.awsserverless.MovieRepository.DYNAMO_ENDPOINT_URL_ENV_VARIABLE;
 
 /**
  * @author IHoubr

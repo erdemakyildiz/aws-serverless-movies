@@ -11,6 +11,14 @@ consumes:
 produces:
   - application/json
 paths:
+  /v1/info/:
+    get:
+      summary: Application info
+      operationId: info
+      responses:
+        "200":
+          description: Application info and request/context details
+      x-amazon-apigateway-integration: ${api_integration}
   /v1/movies/:
     get:
       summary: List all movies
@@ -29,11 +37,7 @@ paths:
           description: A paged array of movies
           schema:
             $ref: '#/definitions/Movies'
-      x-amazon-apigateway-integration:
-        uri: "${invocation_uri}"
-        passthroughBehavior: when_no_match
-        httpMethod: POST
-        type: aws_proxy
+      x-amazon-apigateway-integration: ${api_integration}
     post:
       summary: Create a movie
       operationId: createMovies
@@ -42,11 +46,7 @@ paths:
       responses:
         "201":
           description: Null response
-      x-amazon-apigateway-integration:
-        uri: "${invocation_uri}"
-        passthroughBehavior: when_no_match
-        httpMethod: POST
-        type: aws_proxy
+      x-amazon-apigateway-integration: ${api_integration}
   /v1/movies/{movieId}:
     get:
       summary: Info for a specific movie
@@ -64,11 +64,7 @@ paths:
           description: Expected response to a valid request
           schema:
             $ref: '#/definitions/Movies'
-      x-amazon-apigateway-integration:
-        uri: "${invocation_uri}"
-        passthroughBehavior: when_no_match
-        httpMethod: POST
-        type: aws_proxy
+      x-amazon-apigateway-integration: ${api_integration}
 definitions:
   Movie:
     required:

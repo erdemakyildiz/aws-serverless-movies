@@ -1,4 +1,4 @@
-package be.houbrechtsit.goserverless;
+package be.houbrechtsit.awsserverless;
 
 import com.amazonaws.services.dynamodbv2.datamodeling.DynamoDBHashKey;
 import com.amazonaws.services.dynamodbv2.datamodeling.DynamoDBTable;

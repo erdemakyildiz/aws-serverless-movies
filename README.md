@@ -12,6 +12,13 @@ Build
 -----
 Run `gradlew build`
 
+Install
+-------
+```
+cd terraform
+terraform apply
+```
+
 Intellij setup
 --------------
 * Checkout the source code and import the project from existing sources; select _build.gradle_ when importing.
