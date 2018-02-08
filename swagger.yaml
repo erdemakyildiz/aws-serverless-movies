@@ -40,17 +40,19 @@ paths:
       x-amazon-apigateway-integration: ${api_integration}
     post:
       summary: Create a movie
-      operationId: createMovies
+      operationId: createMovie
       tags:
         - movies
       responses:
         "201":
-          description: Null response
+          description: The new movie
+          schema:
+            $ref: '#/definitions/Movie'
       x-amazon-apigateway-integration: ${api_integration}
   /v1/movies/{movieId}:
     get:
-      summary: Info for a specific movie
-      operationId: showMovieById
+      summary: Details of a specific movie
+      operationId: getMovieById
       tags:
         - movies
       parameters:
@@ -61,15 +63,48 @@ paths:
           type: string
       responses:
         "200":
-          description: Expected response to a valid request
+          description: Movie details
           schema:
-            $ref: '#/definitions/Movies'
+            $ref: '#/definitions/Movie'
+      x-amazon-apigateway-integration: ${api_integration}
+    put:
+      summary: Update movie details
+      operationId: updateMovieById
+      tags:
+        - movies
+      parameters:
+        - name: movieId
+          in: path
+          required: true
+          description: The id of the movie to update
+          type: string
+      responses:
+        "200":
+          description: The updated movie details
+          schema:
+            $ref: '#/definitions/Movie'
+      x-amazon-apigateway-integration: ${api_integration}
+    delete:
+      summary: Delete movie
+      operationId: deleteMovieById
+      tags:
+        - movies
+      parameters:
+        - name: movieId
+          in: path
+          required: true
+          description: The id of the movie to delete
+          type: string
+      responses:
+        "204":
+          description: Empty respons
       x-amazon-apigateway-integration: ${api_integration}
 definitions:
   Movie:
-    required:
-      - title
     properties:
+      id:
+        type: string
+#        readOnly: true // not supported by API gateway
       title:
         type: string
       director:
