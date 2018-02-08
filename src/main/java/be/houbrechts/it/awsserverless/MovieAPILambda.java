@@ -1,7 +1,6 @@
-package be.houbrechtsit.awsserverless;
+package be.houbrechts.it.awsserverless;
 
 import com.amazonaws.services.lambda.runtime.Context;
-import com.amazonaws.services.lambda.runtime.LambdaLogger;
 import com.google.gson.Gson;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -32,17 +31,21 @@ public class MovieAPILambda {
     private Movie movie = new Movie("c1b65747-69c0-4dbb-99ae-9c225c6cd462", "The Shawshank Redemption", "Frank Darabont", 1994);
 
     public ProxyResponse handleRequest(Map<String, Object> request, Context context) {
-        LambdaLogger logger = context.getLogger();
-        logger.log("request: " + new Gson().toJson(request));
-        logger.log("context: " + new Gson().toJson(context));
+        log.debug("request: {}", new Gson().toJson(request));
+        log.debug("context: {}", new Gson().toJson(context));
 
-        String resource = (String) request.get("resource");
-        if ("/v1/info".equals(resource)) {
-            return handleInfoRequest(request, context);
-        } else {
-            return handleMovieRequest(request, context);
+        try {
+            String resource = (String) request.get("resource");
+            if (resource != null && resource.startsWith("/v1/movie")) {
+                return handleMovieRequest(request, context);
+            }
+            if ("/v1/info".equals(resource)) {
+                return handleInfoRequest(request, context);
+            }
+        } catch (Exception e) {
+            log.error("Exception handling request", e);
         }
-//        return new ProxyResponse(404, null, null);
+        return new ProxyResponse(404, null, null);
     }
 
     private ProxyResponse handleMovieRequest(Map<String, Object> request, Context context) {
@@ -75,7 +78,8 @@ public class MovieAPILambda {
     }
 
     private ProxyResponse createMovie(Movie movie) {
-//        movieRepository.saveOrUpdate(movie);
+        MovieRepository movieRepository = MovieRepository.geInstance();
+        movieRepository.saveOrUpdate(movie);
         return new ProxyResponse(200, null, gson.toJson(movie));
     }
 
