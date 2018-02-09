@@ -3,19 +3,15 @@ resource "aws_lambda_function" "movie_api_lambda" {
   filename = "../build/distributions/aws-serverless-movies-${local.application_version}.zip"
 
   function_name = "movie_api_lambda"
-  role = "${aws_iam_role.lambda_exec_role.arn}"
+  role = "${aws_iam_role.movie_api_lambda_role.arn}"
   handler = "be.houbrechts.it.awsserverless.MovieAPILambda::handleRequest"
   runtime = "java8"
-
-  environment {
-    variables = {
-      AWS_TABLE_REGION = "${var.region}"
-    }
-  }
+  memory_size = 512
+  timeout = 20
 }
 
-resource "aws_iam_role" "lambda_exec_role" {
-  name = "lambda_exec_role"
+resource "aws_iam_role" "movie_api_lambda_role" {
+  name = "movie_api_lambda_role"
   assume_role_policy = <<EOF
 {
 	"Version": "2012-10-17",
@@ -33,9 +29,24 @@ resource "aws_iam_role" "lambda_exec_role" {
 EOF
 }
 
-resource "aws_iam_policy_attachment" "allow_dynamodb_from_lambda" {
-  name = "policy_atchmt"
-  roles = [
-    "${aws_iam_role.lambda_exec_role.name}"]
-  policy_arn = "arn:aws:iam::aws:policy/service-role/AWSLambdaDynamoDBExecutionRole"
+resource "aws_iam_role_policy" "movie_api_lambda_policy" {
+  name = "movie_api_lambda_policy"
+  role = "${aws_iam_role.movie_api_lambda_role.id}"
+  policy = <<EOF
+{
+    "Version": "2008-10-17",
+    "Statement": [
+        {
+            "Action": "dynamodb:*",
+            "Effect": "Allow",
+            "Resource": "${aws_dynamodb_table.movies_table.arn}"
+        },
+        {
+            "Action": "logs:*",
+            "Effect": "Allow",
+            "Resource": "*"
+        }
+    ]
+}
+EOF
 }

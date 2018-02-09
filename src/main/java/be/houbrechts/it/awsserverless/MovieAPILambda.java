@@ -12,6 +12,7 @@ import java.util.Map;
 import java.util.Properties;
 
 import static java.util.Collections.singletonList;
+import static java.util.UUID.randomUUID;
 
 public class MovieAPILambda {
     public static final String HTTP_METHOD = "httpMethod";
@@ -26,7 +27,7 @@ public class MovieAPILambda {
     public static final String MOVIE_ID_PATH_PARAMETER = "movieId";
     public static final String PATH_PARAMETERS = "pathParameters";
 
-//    private MovieRepository movieRepository = MovieRepository.geInstance();
+    private MovieRepository movieRepository = MovieRepository.geInstance();
 
     private Movie movie = new Movie("c1b65747-69c0-4dbb-99ae-9c225c6cd462", "The Shawshank Redemption", "Frank Darabont", 1994);
 
@@ -36,7 +37,7 @@ public class MovieAPILambda {
 
         try {
             String resource = (String) request.get("resource");
-            if (resource != null && resource.startsWith("/v1/movie")) {
+            if (resource != null && resource.startsWith("/v1/movies")) {
                 return handleMovieRequest(request, context);
             }
             if ("/v1/info".equals(resource)) {
@@ -44,6 +45,7 @@ public class MovieAPILambda {
             }
         } catch (Exception e) {
             log.error("Exception handling request", e);
+            return new ProxyResponse(500, null, "{\"error\":\"" + e.getMessage() + "\"}");
         }
         return new ProxyResponse(404, null, null);
     }
@@ -73,14 +75,13 @@ public class MovieAPILambda {
     }
 
     private ProxyResponse getMovies() {
-//        return new ProxyResponse(200, null, gson.toJson(movieRepository.list()));
-        return new ProxyResponse(200, null, gson.toJson(singletonList(movie)));
+        return new ProxyResponse(200, null, gson.toJson(movieRepository.list()));
     }
 
     private ProxyResponse createMovie(Movie movie) {
-        MovieRepository movieRepository = MovieRepository.geInstance();
+        movie.setId(randomUUID().toString());
         movieRepository.saveOrUpdate(movie);
-        return new ProxyResponse(200, null, gson.toJson(movie));
+        return new ProxyResponse(201, null, gson.toJson(movie));
     }
 
     private ProxyResponse getMovie(String movieId) {

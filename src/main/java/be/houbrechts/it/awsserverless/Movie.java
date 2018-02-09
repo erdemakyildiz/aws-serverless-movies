@@ -18,7 +18,7 @@ import java.util.UUID;
 public class Movie {
 
     @DynamoDBHashKey
-    private String uuid = UUID.randomUUID().toString();
+    private String id;
     private String title;
     private String director;
     private int year;

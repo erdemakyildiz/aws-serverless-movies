@@ -10,14 +10,14 @@ import org.apache.logging.log4j.Logger;
 
 import java.util.List;
 
-import static com.amazonaws.regions.Regions.US_WEST_1;
+import static com.amazonaws.regions.Regions.EU_WEST_1;
 
 /**
  * @author IHoubr
  */
 public class MovieRepository {
     public static final String DYNAMO_ENDPOINT_URL_ENV_VARIABLE = "DYNAMO_ENDPOINT_URL";
-    private static String region = US_WEST_1.getName();
+    private static String region;
     private static MovieRepository instance;
     private static final Logger log = LogManager.getLogger(MovieRepository.class);
 
@@ -32,7 +32,9 @@ public class MovieRepository {
         }
 
         if (System.getenv("AWS_REGION") != null) {
-            region = System.getenv("AWS_TABLE_REGION");
+            region = System.getenv("AWS_REGION");
+        } else {
+            region = EU_WEST_1.getName();
         }
         instance = new MovieRepository();
         return instance;
@@ -72,6 +74,7 @@ public class MovieRepository {
     }
 
     public void delete(Movie movie) {
+        log.debug("delete {}", movie);
         dynamoDBMapper.delete(movie);
     }
 
