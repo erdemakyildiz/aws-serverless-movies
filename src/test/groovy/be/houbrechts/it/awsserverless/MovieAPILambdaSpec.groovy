@@ -120,7 +120,7 @@ class MovieAPILambdaSpec extends Specification {
                        pathParameters: [movieId: shawshank.id]]
 
         when:
-        def (statusCode, movies) = executeRequest(request)
+        def (statusCode, _) = executeRequest(request)
 
         then:
         statusCode == 204
@@ -129,7 +129,7 @@ class MovieAPILambdaSpec extends Specification {
         request = [httpMethod    : GET,
                    resource      : '/v1/movies/{movieId}',
                    pathParameters: [movieId: shawshank.id]]
-        (statusCode, movies) = executeRequest(request)
+        (statusCode, _) = executeRequest(request)
 
         then:
         statusCode == 404

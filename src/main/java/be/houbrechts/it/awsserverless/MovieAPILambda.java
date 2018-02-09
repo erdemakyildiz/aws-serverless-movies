@@ -26,7 +26,7 @@ public class MovieAPILambda {
     private static final Logger log = LogManager.getLogger(MovieAPILambda.class);
     private static final Gson gson = new Gson();
 
-    private MovieRepository movieRepository = MovieRepository.geInstance();
+    private MovieRepository movieRepository = MovieRepository.getInstance();
 
     public ProxyResponse handleRequest(Map<String, Object> request, Context context) {
         log.debug("request: {}", new Gson().toJson(request));

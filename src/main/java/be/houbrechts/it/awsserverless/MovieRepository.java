@@ -27,11 +27,11 @@ public class MovieRepository {
     @Getter
     private DynamoDBMapper dynamoDBMapper;
 
-    public static MovieRepository geInstance() {
-        return MovieRepository.geInstance(null);
+    public static MovieRepository getInstance() {
+        return MovieRepository.getInstance(null);
     }
 
-    public static MovieRepository geInstance(String dynamoEndpointUrl) {
+    public static MovieRepository getInstance(String dynamoEndpointUrl) {
         if (instance != null) {
             return instance;
         }

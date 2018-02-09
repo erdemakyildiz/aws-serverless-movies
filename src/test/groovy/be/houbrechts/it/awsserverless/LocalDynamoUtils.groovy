@@ -31,7 +31,7 @@ class LocalDynamoUtils {
         port = socket.getLocalPort()
         socket.close()
 
-        def movieRepository = MovieRepository.geInstance("http://localhost:$port")
+        def movieRepository = MovieRepository.getInstance("http://localhost:$port")
         instance = new LocalDynamoUtils(movieRepository.amazonDynamoDB, movieRepository.dynamoDBMapper)
         return instance
     }
