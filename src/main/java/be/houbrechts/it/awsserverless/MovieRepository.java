@@ -3,7 +3,9 @@ package be.houbrechts.it.awsserverless;
 import com.amazonaws.client.builder.AwsClientBuilder;
 import com.amazonaws.services.dynamodbv2.AmazonDynamoDB;
 import com.amazonaws.services.dynamodbv2.AmazonDynamoDBClientBuilder;
-import com.amazonaws.services.dynamodbv2.datamodeling.*;
+import com.amazonaws.services.dynamodbv2.datamodeling.DynamoDBMapper;
+import com.amazonaws.services.dynamodbv2.datamodeling.DynamoDBMapperConfig;
+import com.amazonaws.services.dynamodbv2.datamodeling.DynamoDBScanExpression;
 import lombok.Getter;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -16,7 +18,6 @@ import static com.amazonaws.regions.Regions.EU_WEST_1;
  * @author IHoubr
  */
 public class MovieRepository {
-    public static final String DYNAMO_ENDPOINT_URL_ENV_VARIABLE = "DYNAMO_ENDPOINT_URL";
     private static String region;
     private static MovieRepository instance;
     private static final Logger log = LogManager.getLogger(MovieRepository.class);
@@ -27,6 +28,10 @@ public class MovieRepository {
     private DynamoDBMapper dynamoDBMapper;
 
     public static MovieRepository geInstance() {
+        return MovieRepository.geInstance(null);
+    }
+
+    public static MovieRepository geInstance(String dynamoEndpointUrl) {
         if (instance != null) {
             return instance;
         }
@@ -36,36 +41,29 @@ public class MovieRepository {
         } else {
             region = EU_WEST_1.getName();
         }
-        instance = new MovieRepository();
+        instance = new MovieRepository(dynamoEndpointUrl);
         return instance;
     }
 
-    private MovieRepository() {
-        log.debug("MovieRepository ctor");
+    private MovieRepository(String dynamoEndpointUrl) {
         DynamoDBMapperConfig dbMapperConfig =
                 new DynamoDBMapperConfig.Builder().build();
 
         AmazonDynamoDBClientBuilder clientBuilder = AmazonDynamoDBClientBuilder.standard();
-        String dynamoEndpointUrl = System.getenv(DYNAMO_ENDPOINT_URL_ENV_VARIABLE);
         if (dynamoEndpointUrl != null) {
+            log.info("dynamoEndpointUrl: {}", dynamoEndpointUrl);
             clientBuilder = clientBuilder.withEndpointConfiguration(
                     new AwsClientBuilder.EndpointConfiguration(dynamoEndpointUrl, region));
         } else {
-            log.debug("clientBuilder.withRegion {}", region);
             clientBuilder = clientBuilder.withRegion(region);
         }
-        log.debug("MovieRepository 5");
         amazonDynamoDB = clientBuilder.build();
-        log.debug("MovieRepository 6");
         dynamoDBMapper = new DynamoDBMapper(amazonDynamoDB, dbMapperConfig);
-        log.debug("MovieRepository 7");
     }
 
     public Movie load(String id) {
-        DynamoDBQueryExpression<Movie> query = new DynamoDBQueryExpression<>();
-        query.setHashKeyValues(new Movie(id, null, null, 0));
-        PaginatedQueryList<Movie> movies = dynamoDBMapper.query(Movie.class, query);
-        return movies.isEmpty() ? null : movies.get(0);
+        log.debug("load {}", id);
+        return dynamoDBMapper.load(new Movie(id, null, null, 0));
     }
 
     public void saveOrUpdate(Movie movie) {
@@ -79,6 +77,7 @@ public class MovieRepository {
     }
 
     public List<Movie> list() {
+        log.debug("list");
         return dynamoDBMapper.scan(Movie.class, new DynamoDBScanExpression());
     }
 }

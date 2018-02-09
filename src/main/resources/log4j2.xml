@@ -8,8 +8,9 @@
         </Lambda>
     </Appenders>
     <Loggers>
-        <Root level="debug">
-            <AppenderRef ref="Lambda" />
+        <Root level="warn">
+            <AppenderRef ref="Lambda"/>
         </Root>
+        <Logger name="be.houbrechts.it" level="debug"/>
     </Loggers>
 </Configuration>

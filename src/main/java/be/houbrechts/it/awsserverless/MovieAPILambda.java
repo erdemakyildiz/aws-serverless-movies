@@ -11,7 +11,6 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Properties;
 
-import static java.util.Collections.singletonList;
 import static java.util.UUID.randomUUID;
 
 public class MovieAPILambda {
@@ -21,15 +20,13 @@ public class MovieAPILambda {
     public static final String POST = "POST";
     public static final String PUT = "PUT";
     public static final String DELETE = "DELETE";
-
-    private static final Logger log = LogManager.getLogger(MovieAPILambda.class);
-    private static final Gson gson = new Gson();
     public static final String MOVIE_ID_PATH_PARAMETER = "movieId";
     public static final String PATH_PARAMETERS = "pathParameters";
 
-    private MovieRepository movieRepository = MovieRepository.geInstance();
+    private static final Logger log = LogManager.getLogger(MovieAPILambda.class);
+    private static final Gson gson = new Gson();
 
-    private Movie movie = new Movie("c1b65747-69c0-4dbb-99ae-9c225c6cd462", "The Shawshank Redemption", "Frank Darabont", 1994);
+    private MovieRepository movieRepository = MovieRepository.geInstance();
 
     public ProxyResponse handleRequest(Map<String, Object> request, Context context) {
         log.debug("request: {}", new Gson().toJson(request));
@@ -38,7 +35,7 @@ public class MovieAPILambda {
         try {
             String resource = (String) request.get("resource");
             if (resource != null && resource.startsWith("/v1/movies")) {
-                return handleMovieRequest(request, context);
+                return handleMovieRequest(request);
             }
             if ("/v1/info".equals(resource)) {
                 return handleInfoRequest(request, context);
@@ -50,7 +47,7 @@ public class MovieAPILambda {
         return new ProxyResponse(404, null, null);
     }
 
-    private ProxyResponse handleMovieRequest(Map<String, Object> request, Context context) {
+    private ProxyResponse handleMovieRequest(Map<String, Object> request) {
         String movieId = getMovieId(request);
         String httpMethod = (String) request.get(HTTP_METHOD);
         String body = (String) request.get(BODY);
@@ -85,17 +82,28 @@ public class MovieAPILambda {
     }
 
     private ProxyResponse getMovie(String movieId) {
-//        return new ProxyResponse(200, null, gson.toJson(movieRepository.load(movieId)));
-        return new ProxyResponse(200, null, gson.toJson(movie));
+        final Movie movie = movieRepository.load(movieId);
+        return movie == null ?
+                new ProxyResponse(404, null, null) :
+                new ProxyResponse(200, null, gson.toJson(movie));
     }
 
     private ProxyResponse updateMovie(String movieId, Movie movie) {
-//        movieRepository.saveOrUpdate(movie);
+        final Movie existing = movieRepository.load(movieId);
+        if (existing == null) {
+            return new ProxyResponse(404, null, null);
+        }
+        movie.setId(movieId);
+        movieRepository.saveOrUpdate(movie);
         return new ProxyResponse(200, null, gson.toJson(movie));
     }
 
     private ProxyResponse deleteMovie(String movieId) {
-//        movieRepository.delete(new Movie(movieId, null, 0));
+        final Movie existing = movieRepository.load(movieId);
+        if (existing == null) {
+            return new ProxyResponse(404, null, null);
+        }
+        movieRepository.delete(existing);
         return new ProxyResponse(204, null, null);
     }
 
