@@ -1,8 +1,19 @@
+locals {
+  "x-amazon-apigateway-integration" = <<EOF
+# comment to force new-line, do not remove
+uri: 'arn:aws:apigateway:${var.region}:lambda:path/2015-03-31/functions/${aws_lambda_function.movie_api_lambda.arn}/invocations'
+passthroughBehavior: when_no_match
+httpMethod: POST
+type: aws_proxy
+EOF
+}
+
+
 data "template_file" "swagger" {
   template = "${file("../swagger.yaml")}"
 
   vars {
-    api_integration = "{ uri: 'arn:aws:apigateway:${var.region}:lambda:path/2015-03-31/functions/${aws_lambda_function.movie_api_lambda.arn}/invocations', passthroughBehavior: when_no_match, httpMethod: POST, type: aws_proxy }"
+    api_integration = "${indent(8, local.x-amazon-apigateway-integration)}"
   }
 }
 

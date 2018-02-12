@@ -9,3 +9,11 @@ locals {
 provider "aws" {
   region = "${var.region}"
 }
+
+terraform {
+  backend "s3" {
+    bucket = "houbie-terraform"
+    key    = "aws-serverless-movies"
+    region = "eu-west-1"
+  }
+}
