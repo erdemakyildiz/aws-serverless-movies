@@ -1,4 +1,4 @@
-Carrier Pickup Notification
+Serverless Movie Service
 ============================
 
 Description
