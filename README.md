@@ -3,7 +3,7 @@ Serverless Movie Service
 
 Description
 -----------
-AWS Server-less application that notifies carriers when a trailer can be picked up earlier.
+AWS Server-less demo application / movie database.
 
 ![](docs/architecture.png)
 
