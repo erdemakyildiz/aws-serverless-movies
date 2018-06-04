@@ -50,17 +50,17 @@ paths:
             $ref: '#/definitions/Movie'
       x-amazon-apigateway-integration: ${api_integration}
   /v1/movies/{movieId}:
+    parameters:
+      - name: movieId
+        in: path
+        required: true
+        description: The id of the movie to retrieve
+        type: string
     get:
       summary: Details of a specific movie
       operationId: getMovieById
       tags:
         - movies
-      parameters:
-        - name: movieId
-          in: path
-          required: true
-          description: The id of the movie to retrieve
-          type: string
       responses:
         "200":
           description: Movie details
@@ -72,12 +72,6 @@ paths:
       operationId: updateMovieById
       tags:
         - movies
-      parameters:
-        - name: movieId
-          in: path
-          required: true
-          description: The id of the movie to update
-          type: string
       responses:
         "200":
           description: The updated movie details
@@ -89,12 +83,97 @@ paths:
       operationId: deleteMovieById
       tags:
         - movies
+      responses:
+        "204":
+          description: Empty respons
+      x-amazon-apigateway-integration: ${api_integration}
+  /v1/ratings/:
+    get:
+      summary: List all ratings
+      operationId: listRatings
+      tags:
+        - ratings
+      parameters:
+        - name: limit
+          in: query
+          description: How many items to return at one time (max 100)
+          required: false
+          type: integer
+          format: int32
+      responses:
+        "200":
+          description: A paged array of ratings
+          schema:
+            $ref: '#/definitions/Ratings'
+      x-amazon-apigateway-integration: ${api_integration}
+  /v1/ratings/{movieId}/:
+    get:
+      summary: The list of ratings for a movie
+      operationId: getRatingByMovieId
+      tags:
+        - ratings
       parameters:
         - name: movieId
           in: path
           required: true
-          description: The id of the movie to delete
+          description: The id of the rated movie
           type: string
+      responses:
+        "200":
+          description: List of rating details
+          schema:
+            $ref: '#/definitions/Ratings'
+      x-amazon-apigateway-integration: ${api_integration}
+    post:
+      summary: Create a rating
+      operationId: createRating
+      tags:
+        - ratings
+      responses:
+        "201":
+          description: The new rating
+          schema:
+            $ref: '#/definitions/Rating'
+      x-amazon-apigateway-integration: ${api_integration}
+  /v1/ratings/{movieId}/{email}:
+    parameters:
+      - name: movieId
+        in: path
+        required: true
+        description: The id of the rated movie
+        type: string
+      - name: email
+        in: path
+        required: true
+        description: The email of the rating person
+        type: string
+    get:
+      summary: Details of a specific rating
+      operationId: getRatingByMovieIdAndEmail
+      tags:
+        - ratings
+      responses:
+        "200":
+          description: Rating details
+          schema:
+            $ref: '#/definitions/Rating'
+      x-amazon-apigateway-integration: ${api_integration}
+    put:
+      summary: Update rating details
+      operationId: updateRatingByMovieIdAndEmail
+      tags:
+        - ratings
+      responses:
+        "200":
+          description: The updated rating details
+          schema:
+            $ref: '#/definitions/Rating'
+      x-amazon-apigateway-integration: ${api_integration}
+    delete:
+      summary: Delete rating
+      operationId: deleteRatingByMovieIdAndEmail
+      tags:
+        - ratings
       responses:
         "204":
           description: Empty respons
@@ -115,3 +194,19 @@ definitions:
     type: array
     items:
       $ref: '#/definitions/Movie'
+  Rating:
+    properties:
+      movieId:
+        type: string
+#        readOnly: true // not supported by API gateway
+      email:
+        type: string
+        format: email
+      rating:
+        type: integer
+        minimum: 0
+        maximum: 10
+  Ratings:
+    type: array
+    items:
+      $ref: '#/definitions/Rating'

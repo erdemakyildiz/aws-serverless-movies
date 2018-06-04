@@ -4,7 +4,7 @@ resource "aws_lambda_function" "movie_api_lambda" {
 
   function_name = "movie_api_lambda"
   role = "${aws_iam_role.movie_api_lambda_role.arn}"
-  handler = "be.houbrechts.it.awsserverless.MovieAPILambda::handleRequest"
+  handler = "be.houbrechts.it.awsserverless.APILambda::handleRequest"
   runtime = "java8"
   memory_size = 512
   timeout = 20
