@@ -7,80 +7,28 @@ buildscript {
     }
 }
 
-plugins {
-    id 'groovy'
-    id 'com.github.ben-manes.versions' version '0.17.0'
-}
-
-ext {
-    sourceCompatibility = '1.8'
-    targetCompatibility = '1.8'
-}
 
 repositories {
     jcenter()
-    maven {
-        url 'http://dynamodb-local.s3-website-us-west-2.amazonaws.com/release'
-    }
 }
 
 version = file('version').text.trim()
 group = 'be.houbrechts-it'
 
 
-dependencies {
-    compileOnly('org.projectlombok:lombok:1.16.20')
-    compileOnly('com.amazonaws:aws-lambda-java-core:1.2.0')
-
-//    compile('com.amazonaws:aws-lambda-java-events:1.2.0')
-    compile('com.amazonaws:aws-java-sdk-dynamodb:1.11.273')
-    compile('com.google.code.gson:gson:2.8.2')
-    compile('com.amazonaws:aws-lambda-java-log4j2:1.0.0')
-
-    testCompile('com.amazonaws:DynamoDBLocal:1.11.86')
-    testCompile('junit:junit:4.12')
-    testCompile('org.codehaus.groovy:groovy-all:2.4.13')
-    testCompile('org.spockframework:spock-core:1.1-groovy-2.4')
-}
-
-task applicationProperties(type: WriteProperties) {
-    outputFile = 'build/application.properties'
-    properties 'Implementation-Title': project.name,
-            'Implementation-Version': project.version,
-            'Built-Date': new Date().format("EEE MMM dd HH:mm:ss zzz yyyy "),
-            'Git-Commit': "git rev-parse HEAD".execute().text.trim(),
-            'Git-Branch': "git rev-parse --abbrev-ref HEAD".execute().text.trim(),
-            'Built-JDK': System.getProperty('java.version'),
-            'Created-By': 'Gradle'
+task buildInfo(type: Copy) {
+    from 'src/info.json'
+    into buildDir
+    expand(projectName: project.name,
+            projectVersion: project.version,
+            buildDate: new Date().format("EEE MMM dd HH:mm:ss zzz yyyy "),
+            gitCommit: "git rev-parse HEAD".execute().text.trim(),
+            gitBranch: "git rev-parse --abbrev-ref HEAD".execute().text.trim()
+    )
 }
 
 task buildZip(type: Zip) {
-    from compileJava
-    from processResources
-    into('lib') {
-        from configurations.runtime
-    }
-    from applicationProperties
+    archiveName = "my-distribution.zip"
+    destinationDir = file("${buildDir}/dist")
+    from buildInfo
 }
-
-build.dependsOn buildZip
-
-
-tasks.withType(Test) {
-    environment.AWS_ACCESS_KEY_ID = 'id'
-    environment.AWS_SECRET_ACCESS_KEY = 'key'
-    //Pass all system properties to the Test JVM
-    systemProperties = System.getProperties()
-    systemProperties['user.dir'] = workingDir
-    systemProperties['java.library.path'] = 'build/test-libs'
-}
-
-task copyLocalDynamoDependencies(type: Copy) {
-    from(configurations.testCompile) {
-        include "*.dylib"
-        include "*.so"
-        include "*.dll"
-    }
-    into 'build/test-libs'
-}
-test.dependsOn copyLocalDynamoDependencies

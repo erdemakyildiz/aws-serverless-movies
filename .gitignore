@@ -10,3 +10,9 @@ gradle-app.setting
 
 .terraform
 terraform.*
+
+node_modules
+dist/
+coverage/
+.history
+.vscode

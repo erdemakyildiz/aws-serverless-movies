@@ -1,0 +1,8 @@
+{
+    "Implementation-Title": "$projectName",
+    "Implementation-Version": "$projectVersion",
+    "Built-Date": "$buildDate",
+    "Git-Commit": "$gitCommit",
+    "Git-Branch": "$gitBranch",
+    "Created-By": "Gradle"
+}
