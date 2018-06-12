@@ -36,6 +36,11 @@ public class MovieRepository {
             return instance;
         }
 
+
+        if (dynamoEndpointUrl == null) {
+            dynamoEndpointUrl = System.getenv("DYNAMO_ENDPOINT_URL");
+        }
+        log.info("dynamoEndpointUrl: {}", dynamoEndpointUrl);
         if (System.getenv("AWS_REGION") != null) {
             region = System.getenv("AWS_REGION");
         } else {
@@ -51,7 +56,6 @@ public class MovieRepository {
 
         AmazonDynamoDBClientBuilder clientBuilder = AmazonDynamoDBClientBuilder.standard();
         if (dynamoEndpointUrl != null) {
-            log.info("dynamoEndpointUrl: {}", dynamoEndpointUrl);
             clientBuilder = clientBuilder.withEndpointConfiguration(
                     new AwsClientBuilder.EndpointConfiguration(dynamoEndpointUrl, region));
         } else {

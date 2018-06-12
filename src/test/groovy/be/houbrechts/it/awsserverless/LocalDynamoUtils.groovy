@@ -13,7 +13,7 @@ import static com.amazonaws.services.dynamodbv2.util.TableUtils.createTableIfNot
 /**
  * @author IHoubr
  */
-class LocalDynamoUtils {
+public class LocalDynamoUtils {
     private final DynamoDB dynamoDB
     private final DynamoDBMapper dynamoDBMapper
     private final AmazonDynamoDB amazonDynamoDB
@@ -22,7 +22,7 @@ class LocalDynamoUtils {
     private static int port
     private static boolean started = false
 
-    static LocalDynamoUtils getInstance() {
+    public static LocalDynamoUtils getInstance() {
         if (instance != null) {
             return instance
         }
@@ -36,7 +36,11 @@ class LocalDynamoUtils {
         return instance
     }
 
-    void startDynamo() {
+    public void init() {
+
+    }
+
+    public void startDynamo() {
         if (!started) {
             try {
                 ServerRunner.main("-inMemory", "-port", port.toString())
@@ -53,7 +57,7 @@ class LocalDynamoUtils {
         this.amazonDynamoDB = amazonDynamoDB
     }
 
-    void createTable(Class persistentClass) {
+    public void createTable(Class persistentClass) {
         createTableIfNotExists(amazonDynamoDB, createTableRequest(persistentClass))
     }
 
@@ -64,7 +68,7 @@ class LocalDynamoUtils {
 
 
     @SuppressWarnings("unchecked")
-    void clearTable(Class persistentClass) {
+    public void clearTable(Class persistentClass) {
         dynamoDBMapper.scan(persistentClass, new DynamoDBScanExpression()).each { dynamoDBMapper.delete(it) }
     }
 }
