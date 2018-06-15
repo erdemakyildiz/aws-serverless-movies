@@ -6,6 +6,8 @@ import com.amazonaws.services.dynamodbv2.AmazonDynamoDBClientBuilder;
 import com.amazonaws.services.dynamodbv2.datamodeling.DynamoDBMapper;
 import com.amazonaws.services.dynamodbv2.datamodeling.DynamoDBMapperConfig;
 import com.amazonaws.services.dynamodbv2.datamodeling.DynamoDBScanExpression;
+import com.amazonaws.services.dynamodbv2.model.CreateTableRequest;
+import com.amazonaws.services.dynamodbv2.model.ProvisionedThroughput;
 import lombok.Getter;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -13,6 +15,7 @@ import org.apache.logging.log4j.Logger;
 import java.util.List;
 
 import static com.amazonaws.regions.Regions.EU_WEST_1;
+import static com.amazonaws.services.dynamodbv2.util.TableUtils.createTableIfNotExists;
 
 /**
  * @author IHoubr
@@ -51,18 +54,30 @@ public class MovieRepository {
     }
 
     private MovieRepository(String dynamoEndpointUrl) {
-        DynamoDBMapperConfig dbMapperConfig =
-                new DynamoDBMapperConfig.Builder().build();
-
-        AmazonDynamoDBClientBuilder clientBuilder = AmazonDynamoDBClientBuilder.standard();
         if (dynamoEndpointUrl != null) {
-            clientBuilder = clientBuilder.withEndpointConfiguration(
-                    new AwsClientBuilder.EndpointConfiguration(dynamoEndpointUrl, region));
+            initLocalDynamoDb(dynamoEndpointUrl);
         } else {
-            clientBuilder = clientBuilder.withRegion(region);
+            initDynamoDb();
         }
-        amazonDynamoDB = clientBuilder.build();
+    }
+
+    private void initDynamoDb() {
+        log.debug("initDynamoDb");
+        DynamoDBMapperConfig dbMapperConfig = new DynamoDBMapperConfig.Builder().build();
+        amazonDynamoDB = AmazonDynamoDBClientBuilder.standard().withRegion(region).build();
         dynamoDBMapper = new DynamoDBMapper(amazonDynamoDB, dbMapperConfig);
+    }
+
+    private void initLocalDynamoDb(String dynamoEndpointUrl) {
+        log.debug("initLocalDynamoDb");
+        DynamoDBMapperConfig dbMapperConfig = new DynamoDBMapperConfig.Builder().build();
+        amazonDynamoDB = AmazonDynamoDBClientBuilder.standard().withEndpointConfiguration(
+                new AwsClientBuilder.EndpointConfiguration(dynamoEndpointUrl, region)).build();
+        dynamoDBMapper = new DynamoDBMapper(amazonDynamoDB, dbMapperConfig);
+        log.debug("creating Movie table for local Dynamo DB");
+        CreateTableRequest createTableRequest = dynamoDBMapper.generateCreateTableRequest(Movie.class)
+                .withProvisionedThroughput(new ProvisionedThroughput(1000L, 1000L));
+        createTableIfNotExists(amazonDynamoDB, createTableRequest);
     }
 
     public Movie load(String id) {

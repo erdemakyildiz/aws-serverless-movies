@@ -5,7 +5,7 @@ import groovy.json.JsonSlurper
 import spock.lang.Shared
 import spock.lang.Specification
 
-import static APILambda.*
+import static be.houbrechts.it.awsserverless.APILambda.*
 
 /**
  * @author Ivo Houbrechts
@@ -14,7 +14,7 @@ class MovieAPISpec extends Specification {
     @Shared
     def localDynamoUtils = LocalDynamoUtils.instance
     @Shared
-    def movieRepository = MovieRepository.instance
+    def movieRepository
 
     def shawshank = new Movie(id: 1, title: "The Shawshank Redemption", director: "Frank Darabont", year: 1994)
     def godfather = new Movie(id: 2, title: "The Godfather", director: "Francis Ford Coppola", year: 1972)
@@ -23,8 +23,8 @@ class MovieAPISpec extends Specification {
     def lambda = new APILambda()
 
     void setupSpec() {
-        localDynamoUtils.startDynamo()
-        localDynamoUtils.createTable(Movie)
+        localDynamoUtils.init()
+        movieRepository = MovieRepository.instance
     }
 
     void cleanup() {

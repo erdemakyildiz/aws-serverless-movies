@@ -27,6 +27,9 @@ Resources:
             RestApiId: !Ref APIGateway
             Path: /{proxy+}
             Method: ANY
+      Environment:
+        Variables:
+          DYNAMO_ENDPOINT_URL: http://dynamodb:8000
       Policies: AmazonDynamoDBFullAccess
 
   MovieTable:

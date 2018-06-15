@@ -42,3 +42,26 @@ The local Dynamo instance also requires (dummy) credentials. Either create a fil
 ```
 
 or set the _AWS_ACCESS_KEY_ID_ and _AWS_SECRET_ACCESS_KEY_ environment variables with a non-empty value.
+
+Run local
+---------
+Prerequisites:
+* docker
+* python 2.x
+* aws cli: `pip install awscli`
+* sam cli: `pip install aws-sam-cli`
+
+Prepare local dynamodb docker:
+* create a docker network so that sam can connect to the dynamodb docker: `docker network create lambda-local`
+* create dynamodb docker: `docker run -d -v "$PWD/build":/dynamodb_local_db -p 8000:8000 --network lambda-local --name dynamodb cnadiminti/dynamodb-local`
+* start dynamodb docker: `docker start dynamodb`
+* build the lambda: `gradlew build`
+* start sam local: `sam local start-api --docker-network lambda-local`
+
+Sam local should output the API URLs at http://127.0.0.1:3000/
+
+Debug local
+-----------
+Start sam local with a debug port: `sam local start-api --debug-port 5858`
+You have to wait for the lambda JVM to start, which will only happen when you make a API request. Then you can attach
+a debugger (with breakpoint set) to the lambda.
